@@ -8,7 +8,7 @@ import { zh, type HyrealFdeLocaleKey } from "./i18n";
 import { DraftDecisionCard } from "./draft-decision";
 import {
   chipColors, Chip, EmptyState, ErrorState, formatDay, IconBolt, IconClients, IconDraft, IconProject, IconRefresh,
-  PULSE_CSS, Row, RowMeta, RowTitle, SectionCard, SkeletonRows, palette,
+  PULSE_CSS, Row, RowMeta, RowTitle, SectionCard, SkeletonRows, ActionButton, palette,
 } from "./ui";
 
 type Translate = (key: HyrealFdeLocaleKey) => string;
@@ -21,8 +21,8 @@ const SECTION_DEFS: Array<{ kind: SectionKind; titleKey: HyrealFdeLocaleKey; pat
   { kind: "clients", titleKey: "clientsTitle", path: "/api/workbench/clients", icon: <IconClients size={16} /> },
   { kind: "projects", titleKey: "projectsTitle", path: "/api/workbench/projects", icon: <IconProject size={16} /> },
   { kind: "drafts", titleKey: "draftsTitle", path: "/api/workbench/drafts", icon: <IconDraft size={16} /> },
-  { kind: "learning", titleKey: "learningTitle", path: "/api/workbench/learning", icon: <IconBolt size={16} /> },
 ];
+const LEARNING_DEF = { kind: "learning" as SectionKind, titleKey: "learningTitle" as HyrealFdeLocaleKey, path: "/api/workbench/learning", icon: <IconBolt size={16} /> };
 const NOTIFICATIONS_DEF = { kind: "notifications" as SectionKind, titleKey: "notificationsTitle" as HyrealFdeLocaleKey, path: "/api/workbench/notifications", icon: <IconDraft size={16} /> };
 const REPORT_DEF = { kind: "report" as SectionKind, titleKey: "reportTitle" as HyrealFdeLocaleKey, path: "/api/workbench/report?days=7", icon: <IconBolt size={16} /> };
 
@@ -198,17 +198,27 @@ if (isPending && id) {
   );
 }
 
-function LearningRows({ rows, t }: { rows: Record<string, unknown>[]; t: Translate }) {
+function LearningRows({ rows, t, platformBase }: { rows: Record<string, unknown>[]; t: Translate; platformBase: string }) {
   if (rows.length === 0) return <EmptyState text={t("empty")} />;
   return (
     <div>
-      {rows.slice(0, 20).map((r, i) => (
-        <Row key={i}>
-          <span style={{ width: 6, height: 6, borderRadius: 999, flexShrink: 0, background: palette.green }} />
-          <RowTitle>{String(r.lessonSlug ?? "—")}</RowTitle>
-          <RowMeta>{formatDay(r.completedAt)}</RowMeta>
-        </Row>
-      ))}
+      {rows.slice(0, 20).map((r, i) => {
+        const slug = String(r.lessonSlug ?? "");
+        const href = platformBase ? `${platformBase}/learning/course/${slug}` : "#";
+        return (
+          <Row key={i}>
+            <span style={{ width: 6, height: 6, borderRadius: 999, flexShrink: 0, background: palette.green }} />
+            <RowTitle>
+              <a href={href} target={"_blank"} rel={"noreferrer"} style={{ color: "inherit", textDecoration: "none" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = palette.brand; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}>
+                {String(r.title ?? slug ?? "—")}
+              </a>
+            </RowTitle>
+            <RowMeta>{formatDay(r.completedAt)}</RowMeta>
+          </Row>
+        );
+      })}
     </div>
   );
 }
@@ -290,13 +300,21 @@ function ContractRows({ data, t }: { data: unknown; t: Translate }) {
 
 function NotificationRows({ rows, t }: { rows: Record<string, unknown>[]; t: Translate }) {
   if (rows.length === 0) return <EmptyState text={t("empty")} />;
+  // 聚合重复项（如后台任务失败刷屏）：同标题合并为一条 + ×N
+  const groups = new Map<string, { row: Record<string, unknown>; n: number }>();
+  for (const r of rows) {
+    const key = String(r.title ?? "—");
+    const g = groups.get(key);
+    if (g) g.n += 1; else groups.set(key, { row: r, n: 1 });
+  }
   return (
     <div>
-      {rows.slice(0, 20).map((n, i) => (
+      {[...groups.values()].slice(0, 20).map(({ row, n }, i) => (
         <Row key={i}>
-          {n.readAt ? null : <span style={{ width: 7, height: 7, borderRadius: 999, flexShrink: 0, background: palette.brand }} />}
-          <RowTitle>{String(n.title ?? "—")}</RowTitle>
-          <RowMeta>{formatDay(n.createdAt)}</RowMeta>
+          {row.readAt ? null : <span style={{ width: 7, height: 7, borderRadius: 999, flexShrink: 0, background: palette.brand }} />}
+          <RowTitle>{String(row.title ?? "—")}</RowTitle>
+          {n > 1 ? <Chip tone={"gray"}>{"×" + n}</Chip> : null}
+          <RowMeta>{formatDay(row.createdAt)}</RowMeta>
         </Row>
       ))}
     </div>
@@ -377,7 +395,7 @@ export function WorkbenchPage(props: { t?: Translate }): ReactNode {
       return <NotificationRows rows={r?.rows ?? []} t={t} />;
     }
     if (kind === "contracts") return <ContractRows data={state.data} t={t} />;
-    if (kind === "learning") return <LearningRows rows={rows ?? []} t={t} />;
+    if (kind === "learning") { const r = (state.data as { recent?: Record<string, unknown>[] } | null)?.recent ?? []; return <LearningRows rows={r} t={t} platformBase={platformBase} />; }
     if (kind === "report") {
       const d = (state.data ?? {}) as Record<string, unknown>;
       const days = typeof d.days === "number" ? d.days : 7;
@@ -406,10 +424,7 @@ export function WorkbenchPage(props: { t?: Translate }): ReactNode {
             {t("openPlatform")}
           </a>
         ) : null}
-        <button type="button" onClick={() => setNonce((n) => n + 1)} style={ghostBtn(true)}>
-          <IconRefresh size={12} color={palette.brand} />
-          {t("refreshAll")}
-        </button>
+        <ActionButton accent icon={<IconRefresh size={12} />} label={t("refreshAll")} onClick={() => setNonce((n) => n + 1)} />
       </div>
 
       <div style={kpiRowStyle}>
@@ -445,6 +460,14 @@ export function WorkbenchPage(props: { t?: Translate }): ReactNode {
             onReload={() => setNonce((n) => n + 1)}
           >
             {renderBody("report", report, platformBase)}
+          </SectionCard>
+          <SectionCard
+            icon={LEARNING_DEF.icon}
+            title={t(LEARNING_DEF.titleKey)}
+            count={learning.status === "ready" && learning.data && typeof learning.data === "object" ? Number((learning.data as { completed?: number }).completed ?? 0) : undefined}
+            onReload={() => setNonce((n) => n + 1)}
+          >
+            {renderBody("learning", learning, platformBase)}
           </SectionCard>
           <SectionCard
             icon={NOTIFICATIONS_DEF.icon}

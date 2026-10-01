@@ -61,6 +61,7 @@ export function SectionCard(props: {
   icon: ReactNode
   title: string
   count?: number
+  refreshLabel?: string
   onReload: () => void
   children: ReactNode
 }) {
@@ -78,15 +79,7 @@ export function SectionCard(props: {
           </span>
         )}
         <span style={{ flex: 1 }} />
-        <button type="button" onClick={props.onReload} title="Refresh"
-          style={{
-            display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
-            border: '1px solid var(--dsw-alias-border-l4, rgba(127,127,127,0.25))',
-            background: 'transparent', borderRadius: 'var(--dsw-radius-sm, 8px)',
-            padding: '3px 8px', fontSize: 12, color: 'inherit', opacity: 0.8,
-          }}>
-          <IconRefresh size={12} />
-        </button>
+        <ActionButton small icon={<IconRefresh size={12} />} label={props.refreshLabel ?? ""} onClick={props.onReload} />
       </header>
       {props.children}
     </section>
@@ -159,4 +152,26 @@ export function formatDay(value: unknown): string {
   if (diffDays === 1) return `昨天`;
   if (diffDays < 7) return `${diffDays} 天前`;
   return md;
+}
+
+// ---------- 卡片式按钮（区头/顶栏统一动作件） ----------
+export function ActionButton({ icon, label, onClick, accent, small }: { icon?: ReactNode; label: string; onClick?: () => void; accent?: boolean; small?: boolean }) {
+  return (
+    <button type={"button"} onClick={onClick}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer",
+        padding: small ? "4px 10px" : "7px 14px",
+        borderRadius: "var(--dsw-radius-sm, 8px)", fontSize: small ? 12 : 12.5, fontWeight: 500,
+        border: accent ? `1px solid ${palette.brand}55` : "1px solid var(--dsw-alias-border-l4, rgba(127,127,127,0.28))",
+        background: accent ? `${palette.brand}14` : "var(--dsw-alias-bg-layer-2, rgba(127,127,127,0.07))",
+        color: accent ? palette.brand : "inherit",
+        boxShadow: "var(--dsw-elevation-0, none)",
+        transition: "box-shadow .15s ease, border-color .15s ease",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "var(--dsw-elevation-1, 0 1px 4px rgba(0,0,0,.12))"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+    >
+      {icon}{label}
+    </button>
+  );
 }
