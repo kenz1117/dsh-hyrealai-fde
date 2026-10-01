@@ -34,6 +34,10 @@ export interface FdeMeta {
   patFingerprint: string | null;
   /** ISO 时间戳；从未保存为 null */
   patUpdatedAt: string | null;
+  /** 本插件当前版本 */
+  currentVersion: string;
+  /** npm 公共源上的最新版本 */
+  latestVersion: string | null;
 }
 
 export async function fdeMeta(): Promise<FdeMeta | null> {
