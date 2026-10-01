@@ -1,0 +1,67 @@
+---
+name: knowledge-flywheel-governance
+description: |
+  组织级 AI 知识治理架构：四种数据分类（Blob 原始素材/Event 事件账本/Candidate 候选变更/Git Vault 已评审真相）绝不互相冒充；知识飞轮八步闭环（CAPTURE→…→USE+EVAL），自动化只到「提出候选」，合并发布必须人工审批，全流程可回滚；Git 为唯一真相源的控制面收敛设计。
+  何时用：用户要建组织级知识回流/沉淀机制、担心 AI 产出污染公司知识、划分自动化与人工审批边界。
+  何时不用：任务级上下文供给结构（用上下文资产卡）；凭证安全（用 secrets 卡）；单产品效果闭环（用数据闭环卡）。
+  Trigger（中）：知识飞轮 / 候选 / 审批 / 治理 / 真相源。Trigger（英）：knowledge flywheel, candidate ledger, governance, git as source of truth。
+metadata:
+  cangjie.generated-by: cangjie-tools v2.5.0
+  cangjie.capability-id: f59
+  cangjie.capability-revision: 1
+  cangjie.bundle-id: fde-ai-landing-2026
+  cangjie.source-title: 企业 AI 落地与 FDE 驻场方法论五件套
+  cangjie.tags: decision, architecture
+---
+# 知识飞轮与组织级数据治理
+
+## R — 原文
+
+> 「开发者可以逐项修好，但修复往往只留在当前机器。下一个 Agent 进入新实例，仍会重复这三次失败。第一个任务的预算同时花在业务修改和环境排查上，排查结果却没有成为项目的一部分。」
+
+—— 出处：阿里云《AI Native 研发实践手册》Agent 环境管理章，counter-example.md ce39 已核验引用。
+
+## I — 自述
+
+组织级 AI 有三个隐形杀手：知识不回流、状态混乱、无人治理。这套治理架构分三层解。
+
+第一层，**四类数据绝不互相冒充**：raw conversation ≠ personal memory ≠ company knowledge ≠ executable Skill。Blob Staging（原始素材暂存，内容寻址、不可变）、Event Ledger（追加式操作证据账本）、Candidate Ledger（候选变更账本，每个候选绑定来源哈希+目标版本）、Git Vault（已评审的公司真相）——沿 Blob→Event→Candidate→Git Vault 单向流转，每步带来源哈希和审批记录。把员工聊天记录直接整理成「公司知识库」条目发布，就是典型的四类冒充违规。
+
+第二层，**知识飞轮八步闭环**：CAPTURE→NORMALIZE→NIGHTLY CURSOR→PROPOSE→VALIDATE→APPROVE→MERGE+PUBLISH→USE+EVAL，评估与失败回流为下一轮观察。核心边界画在 PROPOSE/APPROVE 之间：**自动化止步于「提出候选」，合并必须人工审批**——人看到证据与 diff 才可合并；每晚只提出候选，不改写公司真相，真相只能由人改写。候选状态机含 rejected/stale/rolled_back 分支，合错了可精确回滚（因为候选绑定来源哈希与目标版本），全流程可逆。
+
+第三层，**控制面收敛**：公司买了再多 AI 入口工具，治理不按工具各建一套，而是收敛到单一控制面（Principal/Event Journal/Work Object/Scheduler/Policy 五模块），各工具降级为使用界面；职责三分——派遣层管平台事实、治理面管公司事实、Harness 管 agent loop；Git 为唯一真相源，写入一律走隔离 diff/branch/PR，主 Vault 只读，secrets 永不物化。
+
+## A1 — 书中案例
+
+1. **万有无界平台的 auto bug fix 瓶颈（c03，阿里云团队亲自实践）**：问题——自动修复一次成功率约 89%（60%+ 口径并存），但 bug 日清率只从 53% 升到最高 63%。方法——复盘归因：整体触发依赖人或其他确定性流程，「最后一步自动化」与「知识回写沉淀」没有闭环；转向上下文资产建设（产品/技术/设计文档+前后端工程+测试证据，验证发现的新事实回写沉淀）。结果——近四个版本约 80% 交互体验类需求以 Git 可交互原型承接、30 余项共享技能 6–8 月调用超 2 万次；但触发依赖人的瓶颈仍未根治，成为下一阶段（个人执行节点+团队调度层主动发现上下游状态）的改进目标。
+2. **环境排查不沉淀的对照教训（ce39，同手册反例）**：问题——环境类失败被逐次手工修复但不回写项目资产。结果——下一个 Agent 进入新实例重复同样的三次失败，任务预算被环境排查吃掉。结论——排查结果必须进入候选流程成为项目资产，否则每个失败都是「每实例一次」的沉没成本。
+
+## A2 — 未来触发
+
+**使用情境**：
+1. 组织里 AI 产出（对话记录、代码、报告）越堆越多，担心污染公司知识、分不清哪些能信；
+2. 有人把和 AI 的聊天记录直接整理成「知识库」发布，需要判断这违不违反治理规则；
+3. 公司买了多个 AI 入口工具（IDE 助手、聊天机器人、工作流平台），知识治理不知道从哪收敛；
+4. 要设计「AI 经验变公司资产」的机制，纠结自动化与人工审批的边界划在哪。
+
+**语言信号**（中英双写）：「知识飞轮 knowledge flywheel」「知识治理 knowledge governance」「AI 产出怎么管」「公司知识 company knowledge」「真相源 source of truth」「候选账本 candidate ledger」「人工审批 human approval」「回滚 rollback」「Git Vault」。
+
+**与相邻卡的区分**：单个项目/团队的经验值不值得入库、怎么封装成积木→见 experience-distillation 能力卡；项目执行期的留痕三原则（纪要/确认/签字）→见 four-nines-station-playbook 能力卡；凭证安全原则（secrets 永不物化、Credential Broker）→见 fde-ai-landing-2026 路由入口的对应能力卡。本卡管**组织级**「经验→公司真相」的流转架构与审批边界。
+
+## E — 执行步骤
+
+1. **四类数据盘点**：把现有 AI 产出逐份归入 Blob/Event/Candidate/Git Vault。完成标准：每份产出有且仅有一个类别标签；「聊天记录直进知识库」类冒充项记入违规清单并降级回 Blob。
+2. **建候选流程**：CAPTURE→NORMALIZE→PROPOSE 实现自动化，链路止于提案。完成标准：每个候选绑定来源哈希+目标版本；自动化链路的终点有明确审批人——不存在任何「自动合并」路径。
+3. **人工审批门禁**：APPROVE 节点要求审批人看到证据与 diff 后决定。完成标准：审批记录含证据链接与决定人，rejected/merged 状态落账本；评估结果（USE+EVAL）回流为观察输入。
+   - 判停点：发现合错→走 rolled_back 分支回滚（候选绑定了哈希与版本，粒度精确），禁止在真相源上手工打补丁。
+4. **收敛真相源**：公司知识与 Skill 以 Git 为 canonical，写入走隔离 branch/PR，发布走 versioned release，分发只读。完成标准：主 Vault 只读生效、无直接写入口；secrets 未在任何上下文/日志/环境变量中物化。
+
+## B — 边界
+
+**反场景**：个人知识管理（个人用笔记工具即可，无需候选账本与控制面）；尚无 AI Agent 产出的传统文档管理（先解决文档规范问题）；小团队照搬全套五模块控制面——先从四类数据分清与人工审批两条做起。
+
+**书中警告的失败模式**（取自 counter-example.md）：ce39 排查结果不回写——下一个 Agent 重复同样的失败；ce40 蒸馏焦虑——员工因替代焦虑藏匿关键知识，飞轮没有输入，Harness 工作不可能完成（治理架构解决不了激励问题）；ce17 异常就地解决不留记录——「没有登记的故障等于没有发生，也没有教训」（项目级镜像）；ce42 把「组织内部没共识」的锅甩给工具——数字员工不能替代组织共识，目标模糊时治理流程只会放大混乱。
+
+**阶段 0 批判中的作者盲点**（BOOK_OVERVIEW 第 3 节）：①ANC 架构是**单人/小团队治理视角的理想化设计**——每晚候选、Git 真相源在多利益方、高合规企业环境的落地成本未论证，引用时应评估审批人带宽与跨部门政治成本；②「合并必须人工审批」在大规模候选量下不可扩展，原文未给出分级审批策略（哪些候选可走轻量审批），照搬会造成审批积压或审批橡皮章化；③阿里云 c03 案例自己承认触发依赖人未解决——飞轮「最后一公里」在原文仍是未竟事项，宣称「八步闭环已验证」时须保留这一诚实注脚。
+
+**相邻方法论区分**：与一般「知识管理/DMS」的差异：本卡的核心不是存文档，而是**四类数据隔离+自动化止步于提案+单一真相源**三条反直觉约束；与 experience-distillation 的分工：那张卡管「什么值得成为资产」，本卡管「资产如何流转成公司真相而不失序」。

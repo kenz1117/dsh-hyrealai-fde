@@ -1,5 +1,7 @@
 node_modules/
 lib/
-skills/
 *.log
 .DS_Store
+
+# skills/ 必须提交：源目录是开发机的兄弟仓库 ../ai-fde，不在本仓库内。
+# 从 git/npm 安装时 prepack 拿不到源目录，只能依赖随包提交的 skills/。
