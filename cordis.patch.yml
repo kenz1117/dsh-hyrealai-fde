@@ -1,0 +1,25 @@
+# hyreal-fde-ai 装配清单
+# dsh 按层叠加 patch（后层整层覆盖前层 config）；本文件随 bundle 生效。
+#
+# 配置方式（推荐）：dsh 内「Hyreal FDE工作台 → 接入配置」卡，保存即生效（写 ~/.dsh/hyreal-fde-ai.json）。
+# 环境变量 FDE_BASE_URL / FDE_PAT 为运维/CI 覆盖通道；插件加载时会把配置文件桥接进 env，
+# 供下方 mcp-client 的 !!js 读取（本插件条目须排在 mcp 条目之前）。
+
+- insert:
+    # host 半：/fde/* 同源数据代理 + 斜杠命令 + FDE 工作规范注入
+    - id: hyreal-fde-ai
+      name: 'hyreal-fde-ai'
+
+    # 平台 MCP 连接（工具通道；工具在会话中呈现为 mcp__fde__*）
+    - id: hyreal-fde-mcp
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: fde
+        transport: streamable-http
+        url: !!js '`${process.env.FDE_BASE_URL || "https://fde.goodpoint.top"}/api/mcp`'
+        # 平台不可达不阻断 dsh 启动；工具调用时才报错
+        failOnStartupError: false
+        # 草稿类工具服务端含 RAG+LLM，声明 120s——留 30s 余量
+        toolCallTimeoutMs: 150000
+        headers:
+          Authorization: !!js '`Bearer ${process.env.FDE_PAT ?? ""}`'

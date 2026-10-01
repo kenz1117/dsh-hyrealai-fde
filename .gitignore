@@ -1,0 +1,5 @@
+node_modules/
+lib/
+skills/
+*.log
+.DS_Store
