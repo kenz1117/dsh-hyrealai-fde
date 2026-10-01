@@ -29,7 +29,7 @@ mod.apply(ctx)
 assert.equal(routes.length, 1)
 assert.equal(routes[0].kind, 'prefix')
 assert.equal(routes[0].path, '/fde')
-assert.deepEqual(commands.map((c) => c.name).sort(), ['fde-drafts', 'fde-today'])
+assert.deepEqual(commands.map((c) => c.name), ['fde'])
 assert.equal(sections.length, 1)
 assert.match(sections[0].text, /草稿/)
 
@@ -87,9 +87,9 @@ process.env.FDE_PAT = 'fde_pat_smoke'
 }
 delete process.env.FDE_PAT
 {
-  // 命令：无 PAT → error result
-  const cmd = commands.find((c) => c.name === 'fde-today')
-  const result = await cmd.handler({ rawInput: '', signal: new AbortController().signal })
+  // 命令：无 PAT → /fde 子命令返回 error result
+  const cmd = commands.find((c) => c.name === 'fde')
+  const result = await cmd.handler({ rawInput: 'now', signal: new AbortController().signal })
   assert.equal(result.kind, 'error')
 }
 {

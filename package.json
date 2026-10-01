@@ -1,7 +1,6 @@
 {
   "name": "dsh-hyrealai-fde",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "Hyreal FDE 企业工作台 dsh 插件——在 DeepSeek Harness 内提供结构化工作台界面与平台能力；数据经 MCP（工具）与同源代理（页面）取自 ai-fde 平台",
   "exports": {
