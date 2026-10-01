@@ -2,8 +2,14 @@
 # dsh 按层叠加 patch（后层整层覆盖前层 config）；本文件随 bundle 生效。
 #
 # 配置方式（推荐）：dsh 内「Hyreal FDE工作台 → 接入配置」卡，保存即生效（写 ~/.dsh/dsh-hyrealai-fde.json）。
-# 环境变量 FDE_BASE_URL / FDE_PAT 为运维/CI 覆盖通道；插件加载时会把配置文件桥接进 env，
-# 供下方 mcp-client 的 !!js 读取（本插件条目须排在 mcp 条目之前）。
+# 环境变量 FDE_BASE_URL / FDE_PAT 为运维/CI 覆盖通道（优先级高于配置文件）。
+#
+# ⚠️ 0.1.4 时序修复：!!js 在「条目 config 解析期」求值，与本插件条目 apply()（激活期才
+# bridgeEnv 写 env）不保证先后——0.1.3 的 mcp 条目读 process.env.FDE_PAT 时 env 还没被
+# 桥接，Authorization 恒为空 Bearer → 平台 401 → failOnStartupError:false 静默吞掉 →
+# 永久 disconnected（重启也复现，因为每次 boot 时序相同）。
+# 现两个表达式改为求值期同步直读配置文件（process.getBuiltinModule，Node≥22.3，
+# dsh runtime v24.21），不再依赖任何条目激活顺序；读取结果 memoize 到 process 上复用。
 
 - insert:
     # host 半：/fde/* 同源数据代理 + 斜杠命令 + FDE 工作规范注入
@@ -16,10 +22,10 @@
       config:
         serverName: fde
         transport: streamable-http
-        url: !!js '`${process.env.FDE_BASE_URL || "https://fde.goodpoint.top"}/api/mcp`'
+        url: !!js '(() => { const cfg = (() => { if (process.__hyrealFdeCfg !== undefined) return process.__hyrealFdeCfg; const out = {}; try { const fs = process.getBuiltinModule("node:fs"); const path = process.getBuiltinModule("node:path"); const os = process.getBuiltinModule("node:os"); const home = process.env.DSH_HOME || path.join(os.homedir(), ".dsh"); for (const f of ["dsh-hyrealai-fde.json", "hyreal-fde-ai.json"]) { try { Object.assign(out, JSON.parse(fs.readFileSync(path.join(home, f), "utf8"))); break; } catch (e) {} } } catch (e) {} process.__hyrealFdeCfg = out; return out; })(); return `${(process.env.FDE_BASE_URL || cfg.baseUrl || "https://fde.goodpoint.top").replace(/\/+$/, "")}/api/mcp`; })()'
         # 平台不可达不阻断 dsh 启动；工具调用时才报错
         failOnStartupError: false
         # 草稿类工具服务端含 RAG+LLM，声明 120s——留 30s 余量
         toolCallTimeoutMs: 150000
         headers:
-          Authorization: !!js '`Bearer ${process.env.FDE_PAT ?? ""}`'
+          Authorization: !!js '(() => { const cfg = (() => { if (process.__hyrealFdeCfg !== undefined) return process.__hyrealFdeCfg; const out = {}; try { const fs = process.getBuiltinModule("node:fs"); const path = process.getBuiltinModule("node:path"); const os = process.getBuiltinModule("node:os"); const home = process.env.DSH_HOME || path.join(os.homedir(), ".dsh"); for (const f of ["dsh-hyrealai-fde.json", "hyreal-fde-ai.json"]) { try { Object.assign(out, JSON.parse(fs.readFileSync(path.join(home, f), "utf8"))); break; } catch (e) {} } } catch (e) {} process.__hyrealFdeCfg = out; return out; })(); return `Bearer ${process.env.FDE_PAT || cfg.pat || ""}`; })()'
