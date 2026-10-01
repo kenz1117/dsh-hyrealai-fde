@@ -5,10 +5,10 @@
 //   - 网页入口（webUrl）：https://fde.goodpoint.top/brain —— "打开平台"链接的去处
 // 配置来源（优先级：环境变量 > 配置文件）：
 //   - 环境变量 FDE_BASE_URL / FDE_PAT（运维/CI 覆盖用）
-//   - 配置文件 $DSH_HOME/hyreal-fde-ai.json（默认 ~/.dsh/），由工作台页的「接入配置」卡写入
+//   - 配置文件 $DSH_HOME/dsh-hyrealai-fde.json（默认 ~/.dsh/），由工作台页的「接入配置」卡写入
 // 保存时同步桥接回环境变量：cordis.patch.yml 里 mcp-client 的 !!js 读 env，重启 dsh 后工具通道生效。
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 
@@ -27,7 +27,13 @@ export interface FdeConfig {
 
 function configPath(): string {
   const home = process.env.DSH_HOME || join(homedir(), '.dsh')
-  return join(home, 'hyreal-fde-ai.json')
+  const newPath = join(home, 'dsh-hyrealai-fde.json')
+  const oldPath = join(home, 'hyreal-fde-ai.json')
+  // 一次性迁移旧配置（保住已保存的真实令牌）
+  if (!existsSync(newPath) && existsSync(oldPath)) {
+    try { copyFileSync(oldPath, newPath); } catch {}
+  }
+  return newPath
 }
 
 export function readFdeConfig(): FdeConfig {

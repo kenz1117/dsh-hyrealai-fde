@@ -7,12 +7,12 @@ import { join } from 'node:path'
 import { Readable } from 'node:stream'
 
 // 配置文件写到临时 DSH_HOME，绝不污染真实 ~/.dsh
-process.env.DSH_HOME = mkdtempSync(join(tmpdir(), 'hyreal-fde-ai-smoke-'))
+process.env.DSH_HOME = mkdtempSync(join(tmpdir(), 'dsh-hyrealai-fde-smoke-'))
 
 const mod = await import('../lib/index.js')
 
 // 1) 模块形状（Cordis 插件契约：name / inject / apply）
-assert.equal(mod.name, 'hyreal-fde-ai')
+assert.equal(mod.name, 'dsh-hyrealai-fde')
 assert.deepEqual(mod.inject, ['webServer', 'commands', 'systemPrompt'])
 assert.equal(typeof mod.apply, 'function')
 
@@ -63,7 +63,7 @@ delete process.env.FDE_PAT
   await routes[0].handler(mockReq('/fde/meta'), res)
   assert.equal(res.statusCode, 200)
   const meta = JSON.parse(res.body)
-  assert.equal(meta.name, 'hyreal-fde-ai')
+  assert.equal(meta.name, 'dsh-hyrealai-fde')
   assert.equal(meta.hasPat, false)
 }
 {

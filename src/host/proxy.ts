@@ -65,7 +65,7 @@ export function registerFdeProxy(ctx: HostContext): void {
         const fingerprint = patFingerprint()
         const updatedAt = patUpdatedAt()
         return sendJson(res, 200, {
-          name: 'hyreal-fde-ai',
+          name: 'dsh-hyrealai-fde',
           baseUrl: fdeBaseUrl(),
           webUrl: fdeWebUrl(),
           defaultBaseUrl: DEFAULT_BASE_URL,
@@ -86,7 +86,7 @@ export function registerFdeProxy(ctx: HostContext): void {
       // /fde/api/workbench/actions → /api/workbench/actions
       const upstreamPath = url.pathname.slice('/fde'.length) || '/'
       if (!PROXY_ALLOWED_PREFIXES.some((p) => upstreamPath.startsWith(p))) {
-        return sendJson(res, 403, { error: '路径不在 hyreal-fde-ai 代理白名单内', path: upstreamPath })
+        return sendJson(res, 403, { error: '路径不在 dsh-hyrealai-fde 代理白名单内', path: upstreamPath })
       }
 
       const method = (req.method ?? 'GET').toUpperCase()

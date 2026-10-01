@@ -1,6 +1,6 @@
 # AGENTS.md
 
-本仓库是 dsh 原生插件（hyreal-fde-ai）。给 agent 的开发约定：
+本仓库是 dsh 原生插件（dsh-hyrealai-fde）。给 agent 的开发约定：
 
 1. **宿主只认构建产物**：改完 `src/` 必须 `pnpm build` 后再在 dsh 里验证；`lib/` 不入库。
 2. **类型垫片单一来源**：dsh 服务签名都在 `src/dsh-types.ts`（对照 dsh 源码核实）——dsh 升级先核对这个文件，不要在业务代码里散落结构假设。

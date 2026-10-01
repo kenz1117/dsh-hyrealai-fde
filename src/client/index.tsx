@@ -1,4 +1,4 @@
-// hyreal-fde-ai client 半入口：只注册 UI——侧边栏入口、工作台页、工具结果卡片、设置分区、词典。
+// dsh-hyrealai-fde client 半入口：只注册 UI——侧边栏入口、工作台页、工具结果卡片、设置分区、词典。
 // 取数一律 fetch('/fde/...')（host 半同源代理），浏览器不接触 PAT。
 import type { ClientContext } from '../dsh-types'
 import { en, NS, zh } from './i18n'
@@ -10,7 +10,7 @@ import { WorkbenchPage } from './workbench-page'
 export const inject = ['slots', 'locale', 'layout']
 
 /** 侧边栏入口 id 与 main 面板 key 同名即联动（见 dsh ui-plugin-manager） */
-const PANEL_ID = 'hyreal-fde-ai'
+const PANEL_ID = 'dsh-hyrealai-fde'
 
 /** 延迟+重试的落位（selectPanel 过早调用会因面板未注册而抛错） */
 function landOnWorkbench(ctx: ClientContext, tries = 0): void {
@@ -52,15 +52,15 @@ export function apply(ctx: ClientContext): void {
   ctx.slots.inject('tool.call.toolview', () => {
     const disposers = [
       ctx.slots.register(
-        { name: 'tool.call.toolview', id: 'hyreal-fde-ai.actions', key: 'mcp__fde__get_my_actions', locale: NS },
+        { name: 'tool.call.toolview', id: 'dsh-hyrealai-fde.actions', key: 'mcp__fde__get_my_actions', locale: NS },
         MyActionsToolView,
       ),
       ctx.slots.register(
-        { name: 'tool.call.toolview', id: 'hyreal-fde-ai.clients', key: 'mcp__fde__search_my_clients', locale: NS },
+        { name: 'tool.call.toolview', id: 'dsh-hyrealai-fde.clients', key: 'mcp__fde__search_my_clients', locale: NS },
         MyClientsToolView,
       ),
       ctx.slots.register(
-        { name: 'tool.call.toolview', id: 'hyreal-fde-ai.draft', key: 'mcp__fde__draft_communication', locale: NS },
+        { name: 'tool.call.toolview', id: 'dsh-hyrealai-fde.draft', key: 'mcp__fde__draft_communication', locale: NS },
         DraftCommunicationToolView,
       ),
     ]

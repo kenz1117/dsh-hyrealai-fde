@@ -11,7 +11,7 @@
 
 ## 2. 页面策略：单独页面 vs 重构 dsh 首页（结论：做成"主页"，不劫持会话）
 
-- 事实：dsh 的 main 是 keyed 插槽，`conversation` 是保留键（会话首页）；我们目前注册的是**并列面板**（hyreal-fde-ai 键），没有动人家首页。
+- 事实：dsh 的 main 是 keyed 插槽，`conversation` 是保留键（会话首页）；我们目前注册的是**并列面板**（dsh-hyrealai-fde 键），没有动人家首页。
 - **推荐：工作台升级为 dsh 的默认落地页**——启动/新开时默认选中工作台面板，会话仍是 Agent 工作区（左右互达）。
   - 落地手段（按优先级验证）：① dsh profile/插件是否支持注册 defaultPanel（查 boot/profile 配置面）；② sidebar 排序第一 + `settings.onboarding` 首次引导"把 Hyreal 工作台设为主页"；③ 最保守：保持现状但把工作台做成全功能页。
   - **不做**：覆盖 `conversation` 键或替换 app root（官方明令禁止，且会话是 Agent 的容器，不能自断）。

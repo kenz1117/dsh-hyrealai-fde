@@ -53,7 +53,7 @@ export interface FdeSaveResult {
   error?: string
 }
 
-/** 保存接入配置（host 半写入 ~/.dsh/hyreal-fde-ai.json 并桥接 env），并做平台可达性测试 */
+/** 保存接入配置（host 半写入 ~/.dsh/dsh-hyrealai-fde.json 并桥接 env），并做平台可达性测试 */
 export async function fdeSaveConfig(input: { baseUrl?: string; pat?: string }): Promise<FdeSaveResult> {
   try {
     const res = await fetch('/fde/config', {

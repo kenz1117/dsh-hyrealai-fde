@@ -46,7 +46,7 @@ await esbuild.build({
 
 const cjs = await readFile('lib/client.cjs', 'utf8')
 const wrapped = `window.__ModuleLoader__.load({
-  id: 'hyreal-fde-ai',
+  id: 'dsh-hyrealai-fde',
   factory(require) {
     var module = { exports: {} };
     var exports = module.exports;
