@@ -8,7 +8,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { HostContext } from '../dsh-types'
 import {
   DEFAULT_BASE_URL, DEFAULT_WEB_URL, fdeBaseUrl, fdeFetch, fdePat, fdeWebUrl, PAT_MISSING_HINT,
-  patFingerprint, patUpdatedAt, saveFdeConfig,
+  patFingerprint, patUpdatedAt, saveFdeConfig, latestNpmVersion, localPluginVersion,
 } from './platform'
 
 /** 允许代理的平台路径前缀（最小开放面；新增必须显式登记于此） */
@@ -62,8 +62,11 @@ export function registerFdeProxy(ctx: HostContext): void {
 
       // 本地端点（不回源、不需要 PAT）
       if (url.pathname === '/fde/meta') {
+
         const fingerprint = patFingerprint()
         const updatedAt = patUpdatedAt()
+        const currentVersion = localPluginVersion()
+        const latestVersion = await latestNpmVersion()
         return sendJson(res, 200, {
           name: 'dsh-hyrealai-fde',
           baseUrl: fdeBaseUrl(),
@@ -74,6 +77,8 @@ export function registerFdeProxy(ctx: HostContext): void {
           mcpReady: Boolean(process.env.FDE_PAT),
           patFingerprint: fingerprint,
           patUpdatedAt: updatedAt,
+          currentVersion,
+          latestVersion,
         })
       }
       if (url.pathname === '/fde/config') {

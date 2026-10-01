@@ -11,6 +11,7 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 export const DEFAULT_BASE_URL = 'https://fde.goodpoint.top'
 export const DEFAULT_WEB_URL = 'https://fde.goodpoint.top/brain'
@@ -131,4 +132,17 @@ export async function fdeFetch(
       text: `平台不可达：${err instanceof Error ? err.message : String(err)}（${fdeBaseUrl()}）`,
     }
   }
+}
+
+/** 本插件当前版本（读随包 package.json） */
+export function localPluginVersion(): string {
+  try { return JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8')).version ?? '' } catch { return '' }
+}
+
+/** npm 公共源上的最新版本（免鉴权）；不可达返回 null */
+export async function latestNpmVersion(): Promise<string | null> {
+  try {
+    const r = await fetch('https://registry.npmjs.org/dsh-hyrealai-fde/latest', { signal: AbortSignal.timeout(3000) });
+    return r.ok ? ((await r.json()) as { version?: string }).version ?? null : null;
+  } catch { return null; }
 }
