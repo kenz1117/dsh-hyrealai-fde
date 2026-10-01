@@ -273,11 +273,12 @@ function ActionRows({ data }: { data: unknown }) {
   );
 }
 
-function ContractRows({ data, t }: { data: unknown; t: Translate }) {
-  const d = data as { contracts?: Record<string, unknown>[]; paymentsDue?: Record<string, unknown>[] };
+function ContractRows({ data, t, platformBase }: { data: unknown; t: Translate; platformBase: string }) {
+  const d = data as { contracts?: Record<string, unknown>[]; paymentsDue?: Record<string, unknown>[]; paymentsPaid?: Record<string, unknown>[] };
   const due = d.paymentsDue ?? [];
+  const paid = d.paymentsPaid ?? [];
   const contracts = d.contracts ?? [];
-  if (due.length === 0 && contracts.length === 0) return <EmptyState text={t("empty")} />;
+  if (due.length === 0 && contracts.length === 0 && paid.length === 0) return <EmptyState text={t("empty")} />;
   return (
     <div>
       {due.map((p, i) => (
@@ -285,6 +286,13 @@ function ContractRows({ data, t }: { data: unknown; t: Translate }) {
           <Chip tone="red">{t("paymentDue")}</Chip>
           <RowTitle>{String(p.label ?? "—")}</RowTitle>
           <RowMeta>{String((p.contract as { client?: { name?: unknown } })?.client?.name ?? "")} · {formatDay(p.dueDate)}</RowMeta>
+        </Row>
+      ))}
+      {paid.map((p, i) => (
+        <Row key={"paid" + i}>
+          <Chip tone={"green"}>已回款</Chip>
+          <RowTitle>{String(p.label ?? "—")}</RowTitle>
+          <RowMeta>{String((p.contract as { client?: { name?: unknown } })?.client?.name ?? "")} · {formatDay(p.paidAt)}</RowMeta>
         </Row>
       ))}
       {contracts.map((c, i) => (
@@ -394,7 +402,7 @@ export function WorkbenchPage(props: { t?: Translate }): ReactNode {
       const r = state.data as { rows?: Record<string, unknown>[] } | null;
       return <NotificationRows rows={r?.rows ?? []} t={t} />;
     }
-    if (kind === "contracts") return <ContractRows data={state.data} t={t} />;
+    if (kind === "contracts") return <ContractRows data={state.data} t={t} platformBase={platformBase} />;
     if (kind === "learning") { const r = (state.data as { recent?: Record<string, unknown>[] } | null)?.recent ?? []; return <LearningRows rows={r} t={t} platformBase={platformBase} />; }
     if (kind === "report") {
       const d = (state.data ?? {}) as Record<string, unknown>;
